@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Cloud Text-to-Speech 完整教學</title>
+  <style>
+    :root {
+      --primary: #4285F4;
+      --green: #34A853;
+      --yellow: #FBBC05;
+      --red: #EA4335;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #e8eaed;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Google Sans', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #4285F4 0%, #0d47a1 100%);
+      color: white;
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+    .hero .badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 16px; font-size: 13px; margin-bottom: 16px; }
+    .hero h1 { font-size: clamp(28px, 5vw, 52px); font-weight: 700; margin-bottom: 16px; }
+    .hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 32px; }
+    .hero .stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; }
+    .hero .stat { text-align: center; }
+    .hero .stat .num { font-size: 32px; font-weight: 700; }
+    .hero .stat .label { font-size: 13px; opacity: 0.8; }
+
+    /* Nav */
+    .nav { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav ul { display: flex; list-style: none; max-width: 1100px; margin: 0 auto; overflow-x: auto; }
+    .nav a { display: block; padding: 16px 20px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
+    .nav a:hover, .nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Section */
+    section { padding: 60px 0; }
+    section:nth-child(even) { background: white; }
+    .section-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .section-sub { color: var(--muted); margin-bottom: 40px; font-size: 16px; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: box-shadow .2s; }
+    .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+    .card .icon { font-size: 32px; margin-bottom: 12px; }
+    .card h3 { font-size: 18px; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 14px; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 24px; }
+    .step { display: flex; gap: 20px; align-items: flex-start; }
+    .step-num { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 18px; }
+    .step-body h3 { font-size: 18px; margin-bottom: 6px; }
+    .step-body p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    .step-body code { background: #f1f3f4; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+    .step-body pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin-top: 10px; line-height: 1.8; }
+    .step-body .tip { background: #e8f0fe; border-left: 4px solid var(--primary); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #1a73e8; margin-top: 10px; }
+
+    /* Pricing */
+    .pricing-table { width: 100%; border-collapse: collapse; border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .pricing-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: left; font-size: 14px; }
+    .pricing-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .pricing-table tr:last-child td { border-bottom: none; }
+    .pricing-table tr:nth-child(even) td { background: #f8f9fa; }
+    .free-tag { background: #e6f4ea; color: var(--green); padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .calc-box { background: #e8f0fe; border-radius: var(--radius); padding: 24px; margin-top: 30px; }
+    .calc-box h3 { margin-bottom: 16px; color: var(--primary); }
+    .calc-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(66,133,244,0.2); font-size: 14px; }
+    .calc-row:last-child { border-bottom: none; font-weight: 700; font-size: 16px; color: var(--green); }
+
+    /* Voice Demo */
+    .voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .voice-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: all .2s; }
+    .voice-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(66,133,244,.15); }
+    .voice-card .voice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .voice-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .female { background: linear-gradient(135deg, #f8bbd0, #f48fb1); }
+    .male { background: linear-gradient(135deg, #bbdefb, #90caf9); }
+    .voice-name { font-weight: 600; font-size: 16px; }
+    .voice-meta { font-size: 12px; color: var(--muted); }
+    .voice-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .badge-chirp { background: #fce4ec; color: #c62828; }
+    .badge-wavenet { background: #e3f2fd; color: #1565c0; }
+    .badge-standard { background: #f3e5f5; color: #6a1b9a; }
+    audio { width: 100%; height: 36px; margin-top: 4px; }
+    audio::-webkit-media-controls-panel { background: #f8f9fa; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .tab { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 14px; transition: all .2s; }
+    .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Footer */
+    footer { background: #202124; color: #9aa0a6; text-align: center; padding: 40px 24px; font-size: 14px; }
+    footer a { color: #8ab4f8; text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .hero .stats { gap: 24px; }
+      section { padding: 40px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="badge">🎙️ Google Cloud AI</div>
+  <h1>Text-to-Speech<br>完整教學指南</h1>
+  <p>從零開始學會使用 Google Cloud TTS API，讓你的應用開口說話</p>
+  <div class="stats">
+    <div class="stat"><div class="num">38+</div><div class="label">中文語音選擇</div></div>
+    <div class="stat"><div class="num">400萬</div><div class="label">每月免費字符</div></div>
+    <div class="stat"><div class="num">5分鐘</div><div class="label">快速上手</div></div>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <ul>
+    <li><a href="#intro">介紹</a></li>
+    <li><a href="#setup">申請教學</a></li>
+    <li><a href="#pricing">費用計算</a></li>
+    <li><a href="#demo">語音試聽</a></li>
+    <li><a href="#code">程式碼</a></li>
+  </ul>
+</nav>
+
+<!-- Intro -->
+<section id="intro">
+  <div class="container">
+    <div class="section-title">什麼是 Google Cloud TTS？</div>
+    <div class="section-sub">利用 Google 深度學習技術，將文字轉換成自然流暢的語音</div>
+    <div class="cards">
+      <div class="card">
+        <div class="icon">🌟</div>
+        <h3>Chirp3 HD 超自然語音</h3>
+        <p>最新一代語音合成技術，音質媲美真人，情感表達自然豐富，適合高品質應用場景。</p>
+      </div>
+      <div class="card">
+        <div class="icon">🌍</div>
+        <h3>多語言支援</h3>
+        <p>支援 40+ 種語言，中文提供繁體、簡體兩種版本，共 38+ 種聲音可選。</p>
+      </div>
+      <div class="card">
+        <div class="icon">⚡</div>
+        <h3>即時合成</h3>
+        <p>毫秒級響應速度，支援串流輸出，可應用於即時對話系統、語音助理等場景。</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎛️</div>
+        <h3>高度可調整</h3>
+        <p>可調整語速、音調、音量，支援 SSML 標記語言，精確控制語音的每個細節。</p>
+      </div>
+      <div class="card">
+        <div class="icon">💰</div>
+        <h3>慷慨免費額度</h3>
+        <p>標準語音每月免費 400 萬字，WaveNet 免費 100 萬字，個人使用幾乎不需付費。</p>
+      </div>
+      <div class="card">
+        <div class="icon">🔌</div>
+        <h3>簡單 REST API</h3>
+        <p>標準 HTTP 接口，支援 Python、Node.js、Go、Java 等所有主流程式語言。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Setup -->
+<section id="setup" style="background:white;">
+  <div class="container">
+    <div class="section-title">5 步驟申請 API 金鑰</div>
+    <div class="section-sub">只需幾分鐘即可完成設定，開始使用免費額度</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>前往 Google Cloud Console</h3>
+          <p>開啟瀏覽器前往 <code>console.cloud.google.com</code>，使用 Google 帳號登入。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>建立新專案</h3>
+          <p>點擊頂部導覽列的專案選擇器 → 「新增專案」→ 輸入名稱後建立。</p>
+          <div class="tip">💡 建議為 TTS 單獨建立一個專案，方便管理費用和權限。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>啟用 Text-to-Speech API</h3>
+          <p>左側選單 → APIs &amp; Services → Library → 搜尋「Cloud Text-to-Speech API」→ 點擊「啟用」。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>建立 API 金鑰</h3>
+          <p>APIs &amp; Services → Credentials → Create Credentials → API Key</p>
+          <div class="tip">⚠️ 建議點擊「限制金鑰」，設定只允許呼叫 Text-to-Speech API，提升安全性。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>啟用帳單（不會立即收費）</h3>
+          <p>需要綁定信用卡才能啟用帳單，但在免費額度內不會收費。超過才開始計費。</p>
+          <div class="tip">💡 新用戶還可獲得 $300 美元免費試用額度！</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-title">費用計算</div>
+    <div class="section-sub">了解免費額度和收費方式，合理規劃使用量</div>
+
+    <table class="pricing-table">
+      <thead>
+        <tr>
+          <th>語音類型</th>
+          <th>每月免費額度</th>
+          <th>超出後費用（每 100 萬字）</th>
+          <th>音質</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Standard（標準）</td>
+          <td><span class="free-tag">400 萬字</span></td>
+          <td>$4.00 USD</td>
+          <td>⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td>WaveNet</td>
+          <td><span class="free-tag">100 萬字</span></td>
+          <td>$16.00 USD</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td>Neural2</td>
+          <td><span class="free-tag">100 萬字</span></td>
+          <td>$16.00 USD</td>
+          <td>⭐⭐⭐⭐</td>
+        </tr>
+        <tr>
+          <td>Chirp3 HD</td>
+          <td><span class="free-tag">100 萬字</span></td>
+          <td>$30.00 USD</td>
+          <td>⭐⭐⭐⭐⭐</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="calc-box">
+      <h3>📊 實際使用場景估算（每月）</h3>
+      <div class="calc-row"><span>一本小說（約 10 萬字）</span><span>免費 ✅</span></div>
+      <div class="calc-row"><span>每日 100 條推播通知（約 2 萬字/月）</span><span>免費 ✅</span></div>
+      <div class="calc-row"><span>播客腳本轉語音（約 50 萬字/月）</span><span>免費 ✅</span></div>
+      <div class="calc-row"><span>超出免費額度 100 萬字（WaveNet）</span><span>$16 USD / 月</span></div>
+      <div class="calc-row"><span>💡 個人或小型專案基本上不需付費</span><span>$0</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section id="demo" style="background:white;">
+  <div class="container">
+    <div class="section-title">語音試聽</div>
+    <div class="section-sub">所有範例均使用相同文字合成，方便直接比較音質差異</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('chirp')">🌟 Chirp3 HD（簡體中文）</div>
+      <div class="tab" onclick="switchTab('wavenet')">✨ WaveNet（繁體中文）</div>
+    </div>
+
+    <div id="tab-chirp" class="tab-content active">
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">示例文字：「亲爱的宝贝，这是我的声音哦～你喜欢哪一种呢？」</p>
+      <div class="voice-grid">
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Achernar</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Achernar.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Aoede</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Aoede.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Autonoe</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Autonoe.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Callirrhoe</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Callirrhoe.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Despina</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Despina.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Erinome</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Erinome.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Gacrux</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Gacrux.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Kore</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Kore.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Laomedeia</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Laomedeia.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Leda</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Leda.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Pulcherrima</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Pulcherrima.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Sulafat</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Sulafat.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Vindemiatrix</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Vindemiatrix.mp3"></audio>
+        </div>
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">Zephyr</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-chirp">Chirp3 HD</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Zephyr.mp3"></audio>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-wavenet" class="tab-content">
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">示例文字：「親愛的寶貝，這是 WaveNet 語音喔～聽起來是不是比較自然呢？」</p>
+      <div class="voice-grid">
+        <div class="voice-card">
+          <div class="voice-header">
+            <div class="voice-avatar female">👩</div>
+            <div>
+              <div class="voice-name">cmn-TW-Wavenet-A</div>
+              <div class="voice-meta">女聲 &nbsp;<span class="voice-badge badge-wavenet">WaveNet</span></div>
+            </div>
+          </div>
+          <audio controls src="audio/Wavenet-A.mp3"></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Code -->
+<section id="code">
+  <div class="container">
+    <div class="section-title">程式碼範例</div>
+    <div class="section-sub">幾行程式碼就能開始使用</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchCodeTab('python')">Python</div>
+      <div class="tab" onclick="switchCodeTab('curl')">cURL</div>
+      <div class="tab" onclick="switchCodeTab('node')">Node.js</div>
+    </div>
+
+    <div id="code-python" class="tab-content active">
+      <div class="card">
+        <pre>import urllib.request, json, base64
+
+API_KEY = "你的 API 金鑰"
+TEXT = "你好，這是 Google Cloud Text-to-Speech 測試"
+
+body = json.dumps({
+    "input": {"text": TEXT},
+    "voice": {
+        "languageCode": "zh-TW",
+        "name": "cmn-TW-Wavenet-A"  # 或 cmn-CN-Chirp3-HD-Zephyr
+    },
+    "audioConfig": {
+        "audioEncoding": "MP3",
+        "speakingRate": 1.0,   # 語速 0.25~4.0
+        "pitch": 0.0           # 音調 -20~20
+    }
+}).encode()
+
+req = urllib.request.Request(
+    f"https://texttospeech.googleapis.com/v1/text:synthesize?key={API_KEY}",
+    data=body,
+    headers={"Content-Type": "application/json"}
+)
+response = urllib.request.urlopen(req)
+data = json.loads(response.read())
+
+# 儲存為 MP3
+with open("output.mp3", "wb") as f:
+    f.write(base64.b64decode(data["audioContent"]))
+
+print("✅ 已儲存為 output.mp3")</pre>
+      </div>
+    </div>
+
+    <div id="code-curl" class="tab-content">
+      <div class="card">
+        <pre>curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {"text": "你好，這是測試"},
+    "voice": {
+      "languageCode": "zh-TW",
+      "name": "cmn-TW-Wavenet-A"
+    },
+    "audioConfig": {"audioEncoding": "MP3"}
+  }' \
+  "https://texttospeech.googleapis.com/v1/text:synthesize?key=你的API金鑰" \
+  | python3 -c "import sys,json,base64; \
+    open('output.mp3','wb').write(base64.b64decode(json.load(sys.stdin)['audioContent']))"</pre>
+      </div>
+    </div>
+
+    <div id="code-node" class="tab-content">
+      <div class="card">
+        <pre>const https = require('https');
+const fs = require('fs');
+
+const API_KEY = '你的 API 金鑰';
+const body = JSON.stringify({
+  input: { text: '你好，這是 Google Cloud TTS 測試' },
+  voice: { languageCode: 'zh-TW', name: 'cmn-TW-Wavenet-A' },
+  audioConfig: { audioEncoding: 'MP3' }
+});
+
+const options = {
+  hostname: 'texttospeech.googleapis.com',
+  path: `/v1/text:synthesize?key=${API_KEY}`,
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' }
+};
+
+const req = https.request(options, (res) => {
+  let data = '';
+  res.on('data', chunk => data += chunk);
+  res.on('end', () => {
+    const { audioContent } = JSON.parse(data);
+    fs.writeFileSync('output.mp3', Buffer.from(audioContent, 'base64'));
+    console.log('✅ 已儲存為 output.mp3');
+  });
+});
+req.write(body);
+req.end();</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>基於 <a href="https://cloud.google.com/text-to-speech" target="_blank">Google Cloud Text-to-Speech</a> 製作 · 語音範例即時合成</p>
+</footer>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('#demo .tab').forEach((t, i) => {
+      t.classList.toggle('active', ['chirp','wavenet'][i] === name);
+    });
+    document.querySelectorAll('#demo .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+  function switchCodeTab(name) {
+    document.querySelectorAll('#code .tab').forEach((t, i) => {
+      t.classList.toggle('active', ['python','curl','node'][i] === name);
+    });
+    document.querySelectorAll('#code .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('code-' + name).classList.add('active');
+  }
+
+  // Nav highlight
+  const sections = document.querySelectorAll('section');
+  const navLinks = document.querySelectorAll('.nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  });
+</script>
+</body>
+</html>
