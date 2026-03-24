@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini 2.5 Flash TTS 完整教學</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --green: #34A853;
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #e8eaed;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Google Sans', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #1a73e8 0%, #6200ea 100%);
+      color: white;
+      padding: 80px 24px 60px;
+      text-align: center;
+    }
+    .hero .badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 16px; font-size: 13px; margin-bottom: 16px; }
+    .hero h1 { font-size: clamp(28px, 5vw, 52px); font-weight: 700; margin-bottom: 16px; }
+    .hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto 32px; }
+    .hero .stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; }
+    .hero .stat .num { font-size: 32px; font-weight: 700; }
+    .hero .stat .label { font-size: 13px; opacity: 0.8; }
+
+    /* Nav */
+    .nav { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { display: flex; align-items: center; max-width: 1100px; margin: 0 auto; }
+    .nav-back { padding: 16px 20px; color: var(--muted); text-decoration: none; font-size: 14px; border-right: 1px solid var(--border); white-space: nowrap; }
+    .nav-back:hover { color: var(--primary); }
+    .nav ul { display: flex; list-style: none; overflow-x: auto; }
+    .nav a { display: block; padding: 16px 20px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
+    .nav a:hover, .nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 60px 0; }
+    section:nth-child(even) { background: white; }
+    .section-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .section-sub { color: var(--muted); margin-bottom: 40px; font-size: 16px; }
+
+    /* Compare */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+    @media(max-width:600px) { .compare { grid-template-columns: 1fr; } }
+    .compare-card { border-radius: var(--radius); padding: 24px; border: 2px solid var(--border); }
+    .compare-card.highlight { border-color: var(--primary); background: #e8f0fe; }
+    .compare-card h3 { font-size: 18px; margin-bottom: 12px; }
+    .compare-card ul { list-style: none; font-size: 14px; color: var(--muted); }
+    .compare-card ul li { padding: 4px 0; }
+    .compare-card ul li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .card .icon { font-size: 32px; margin-bottom: 12px; }
+    .card h3 { font-size: 18px; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 14px; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 24px; }
+    .step { display: flex; gap: 20px; align-items: flex-start; }
+    .step-num { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 18px; }
+    .step-body h3 { font-size: 18px; margin-bottom: 6px; }
+    .step-body p { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+    .step-body code { background: #f1f3f4; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+    .step-body pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin-top: 10px; line-height: 1.8; }
+    .step-body .tip { background: #e8f0fe; border-left: 4px solid var(--primary); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #1a73e8; margin-top: 10px; }
+
+    /* Pricing */
+    .pricing-table { width: 100%; border-collapse: collapse; border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .pricing-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: left; font-size: 14px; }
+    .pricing-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .pricing-table tr:last-child td { border-bottom: none; }
+    .pricing-table tr:nth-child(even) td { background: #f8f9fa; }
+    .free-tag { background: #e6f4ea; color: var(--green); padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .calc-box { background: #e8f0fe; border-radius: var(--radius); padding: 24px; margin-top: 30px; }
+    .calc-box h3 { margin-bottom: 16px; color: var(--primary); }
+    .calc-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(26,115,232,0.2); font-size: 14px; }
+    .calc-row:last-child { border-bottom: none; font-weight: 700; font-size: 16px; color: var(--green); }
+
+    /* Voice Demo */
+    .voice-filter { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-btn { padding: 6px 16px; border-radius: 16px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 13px; transition: all .2s; }
+    .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .voice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .voice-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: all .2s; }
+    .voice-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(26,115,232,.15); }
+    .voice-card[data-gender="male"] { display: none; }
+    .voice-card .voice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .voice-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .female { background: linear-gradient(135deg, #f8bbd0, #f48fb1); }
+    .male { background: linear-gradient(135deg, #bbdefb, #90caf9); }
+    .voice-name { font-weight: 600; font-size: 16px; }
+    .voice-meta { font-size: 12px; color: var(--muted); }
+    .voice-desc { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .voice-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; background: #ede7f6; color: #4a148c; }
+    audio { width: 100%; height: 36px; }
+
+    /* Code tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .tab { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 14px; transition: all .2s; }
+    .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    footer { background: #202124; color: #9aa0a6; text-align: center; padding: 40px 24px; font-size: 14px; }
+    footer a { color: #8ab4f8; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">🚀 Google AI Studio</div>
+  <h1>Gemini 2.5 Flash TTS<br>完整教學指南</h1>
+  <p>使用 AI Studio API Key，體驗最新一代 Gemini 語音合成技術</p>
+  <div class="stats">
+    <div class="stat"><div class="num">30</div><div class="label">語音選擇</div></div>
+    <div class="stat"><div class="num">免費</div><div class="label">AI Studio 試用</div></div>
+    <div class="stat"><div class="num">自然語言</div><div class="label">控制語氣風格</div></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-back">← Cloud TTS</a>
+    <ul>
+      <li><a href="#compare">與 Cloud TTS 比較</a></li>
+      <li><a href="#setup">申請教學</a></li>
+      <li><a href="#pricing">費用</a></li>
+      <li><a href="#demo">語音試聽</a></li>
+      <li><a href="#code">程式碼</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Compare -->
+<section id="compare">
+  <div class="container">
+    <div class="section-title">Gemini TTS vs Cloud TTS</div>
+    <div class="section-sub">兩種方法各有優勢，依需求選擇</div>
+    <div class="compare">
+      <div class="compare-card">
+        <h3>☁️ Google Cloud TTS</h3>
+        <ul>
+          <li>穩定成熟的商業服務</li>
+          <li>Standard 每月 400 萬字免費</li>
+          <li>支援 SSML 精細控制</li>
+          <li>支援繁體中文（zh-TW）</li>
+          <li>Chirp3 HD 音質極佳</li>
+          <li>需要 Cloud Console 設定</li>
+        </ul>
+      </div>
+      <div class="compare-card highlight">
+        <h3>🚀 Gemini 2.5 Flash TTS（推薦）</h3>
+        <ul>
+          <li>最新 AI 模型，音質更自然</li>
+          <li>AI Studio 免費使用（有限額）</li>
+          <li>自然語言控制語氣風格</li>
+          <li>30 種個性鮮明的聲音</li>
+          <li>申請更簡單（只需 Google 帳號）</li>
+          <li>支援多說話者對話合成</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Setup -->
+<section id="setup" style="background:white;">
+  <div class="container">
+    <div class="section-title">3 步驟申請 API 金鑰</div>
+    <div class="section-sub">比 Cloud TTS 更簡單，不需要信用卡即可開始</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>前往 Google AI Studio</h3>
+          <p>開啟瀏覽器前往 <code>aistudio.google.com</code>，使用 Google 帳號登入。</p>
+          <div class="tip">💡 完全免費，不需要綁定信用卡！</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>建立 API 金鑰</h3>
+          <p>左側選單點擊「Get API Key」→「Create API key」→ 選擇或建立 Google Cloud 專案 → 複製金鑰。</p>
+          <div class="tip">⚠️ API Key 只顯示一次，請妥善保存！</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>開始使用</h3>
+          <p>將金鑰貼入程式碼即可使用，無需額外設定。</p>
+          <pre>API_KEY = "你的 Gemini API Key"
+# 就這樣！可以開始呼叫了</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-title">費用說明</div>
+    <div class="section-sub">AI Studio 有免費版，適合個人與小型專案</div>
+
+    <table class="pricing-table">
+      <thead>
+        <tr><th>方案</th><th>免費額度</th><th>付費方案</th><th>備註</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AI Studio 免費版</td>
+          <td><span class="free-tag">每分鐘 10 次請求</span></td>
+          <td>—</td>
+          <td>個人使用足夠</td>
+        </tr>
+        <tr>
+          <td>Gemini API（付費）</td>
+          <td>—</td>
+          <td>依模型計費</td>
+          <td>需啟用 Cloud billing</td>
+        </tr>
+        <tr>
+          <td>Gemini 2.5 Flash TTS</td>
+          <td><span class="free-tag">免費試用</span></td>
+          <td>$0.50 / 100 萬字（估）</td>
+          <td>比 Cloud TTS 便宜</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="calc-box">
+      <h3>📊 免費版夠用嗎？</h3>
+      <div class="calc-row"><span>每分鐘 10 次請求上限</span><span>每小時最多 600 次</span></div>
+      <div class="calc-row"><span>每次合成約 100 字</span><span>每小時最多 6 萬字</span></div>
+      <div class="calc-row"><span>個人 App / 聊天機器人</span><span>免費完全夠用 ✅</span></div>
+      <div class="calc-row"><span>💡 日常個人使用不需付費</span><span>$0</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section id="demo" style="background:white;">
+  <div class="container">
+    <div class="section-title">30 種語音試聽</div>
+    <div class="section-sub">示例文字：「Hello dear, this is my voice. Do you like it? I hope to be with you every day.」</div>
+
+    <div class="voice-filter">
+      <button class="filter-btn active" onclick="filterVoice('female')">👩 女聲（14種）</button>
+      <button class="filter-btn" onclick="filterVoice('male')">👨 男聲（16種）</button>
+      <button class="filter-btn" onclick="filterVoice('all')">全部（30種）</button>
+    </div>
+
+    <div class="voice-grid">
+      <!-- Female -->
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Achernar</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">輕柔溫和</div><audio controls src="audio/gemini/Achernar.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Aoede</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">活潑生動</div><audio controls src="audio/gemini/Aoede.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Autonoe</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">樂觀積極</div><audio controls src="audio/gemini/Autonoe.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Callirrhoe</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">輕鬆隨和</div><audio controls src="audio/gemini/Callirrhoe.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Despina</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">流暢柔順</div><audio controls src="audio/gemini/Despina.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Erinome</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">清晰精準</div><audio controls src="audio/gemini/Erinome.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Gacrux</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">成熟穩重</div><audio controls src="audio/gemini/Gacrux.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Kore</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">自信穩重</div><audio controls src="audio/gemini/Kore.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Laomedeia</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">活潑有勁</div><audio controls src="audio/gemini/Laomedeia.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Leda ⭐</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">年輕有活力（推薦）</div><audio controls src="audio/gemini/Leda.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Pulcherrima</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">表達力強</div><audio controls src="audio/gemini/Pulcherrima.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Sulafat</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">溫暖親切</div><audio controls src="audio/gemini/Sulafat.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Vindemiatrix</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">輕柔和藹</div><audio controls src="audio/gemini/Vindemiatrix.wav"></audio></div>
+      <div class="voice-card" data-gender="female"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Zephyr</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">明亮開朗</div><audio controls src="audio/gemini/Zephyr.wav"></audio></div>
+      <!-- Male -->
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Achird</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">友善親切</div><audio controls src="audio/gemini/Achird.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Algenib</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">粗獷質感</div><audio controls src="audio/gemini/Algenib.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Algieba</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">流暢愉快</div><audio controls src="audio/gemini/Algieba.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Alnilam</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">穩定有力</div><audio controls src="audio/gemini/Alnilam.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Charon</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">清晰沉穩</div><audio controls src="audio/gemini/Charon.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Enceladus</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">輕柔氣息</div><audio controls src="audio/gemini/Enceladus.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Fenrir</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">充滿活力</div><audio controls src="audio/gemini/Fenrir.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Iapetus</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">清晰流暢</div><audio controls src="audio/gemini/Iapetus.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Orus</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">果斷有力</div><audio controls src="audio/gemini/Orus.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Puck</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">活潑有趣</div><audio controls src="audio/gemini/Puck.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Rasalgethi</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">專業清晰</div><audio controls src="audio/gemini/Rasalgethi.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Sadachbia</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">生動活潑</div><audio controls src="audio/gemini/Sadachbia.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Sadaltager</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">權威淵博</div><audio controls src="audio/gemini/Sadaltager.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Schedar</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">男中音渾厚</div><audio controls src="audio/gemini/Schedar.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Umbriel</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">低沉穩重</div><audio controls src="audio/gemini/Umbriel.wav"></audio></div>
+      <div class="voice-card" data-gender="male"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Zubenelgenubi</div><div class="voice-meta"><span class="voice-badge">Gemini 2.5</span></div></div></div><div class="voice-desc">平靜沉穩</div><audio controls src="audio/gemini/Zubenelgenubi.wav"></audio></div>
+    </div>
+  </div>
+</section>
+
+<!-- Code -->
+<section id="code">
+  <div class="container">
+    <div class="section-title">程式碼範例</div>
+    <div class="section-sub">使用 AI Studio API Key 直接呼叫</div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchCodeTab('python')">Python</div>
+      <div class="tab" onclick="switchCodeTab('style')">語氣控制</div>
+      <div class="tab" onclick="switchCodeTab('multi')">多說話者</div>
+    </div>
+
+    <div id="code-python" class="tab-content active">
+      <div class="card">
+        <pre>import urllib.request, json, base64, wave, sys
+sys.stdout.reconfigure(encoding='utf-8')
+
+API_KEY = "你的 Gemini API Key"
+TEXT = "你好，這是 Gemini TTS 語音合成測試"
+
+body = json.dumps({
+    "contents": [{"parts": [{"text": TEXT}]}],
+    "generationConfig": {
+        "responseModalities": ["AUDIO"],
+        "speechConfig": {
+            "voiceConfig": {
+                "prebuiltVoiceConfig": {"voiceName": "Leda"}  # 選擇聲音
+            }
+        }
+    }
+}, ensure_ascii=False).encode('utf-8')
+
+req = urllib.request.Request(
+    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key={API_KEY}",
+    data=body,
+    headers={"Content-Type": "application/json"}
+)
+r = urllib.request.urlopen(req)
+d = json.loads(r.read())
+pcm = base64.b64decode(d["candidates"][0]["content"]["parts"][0]["inlineData"]["data"])
+
+# 儲存為 WAV
+with wave.open("output.wav", "wb") as wf:
+    wf.setnchannels(1)    # 單聲道
+    wf.setsampwidth(2)    # 16-bit
+    wf.setframerate(24000) # 24kHz
+    wf.writeframes(pcm)
+
+print("✅ 已儲存為 output.wav")</pre>
+      </div>
+    </div>
+
+    <div id="code-style" class="tab-content">
+      <div class="card">
+        <pre># Gemini TTS 支援自然語言控制語氣！
+# 直接在文字前加上描述即可
+
+examples = [
+    # 興奮語氣
+    "Say this with excitement: 我們贏了！太棒了！",
+
+    # 溫柔語氣
+    "Say this gently and softly: 晚安，好好休息喔",
+
+    # 專業播報
+    "Say this like a news anchor: 今日天氣晴朗，氣溫攝氏25度",
+
+    # 說故事
+    "Tell this like a bedtime story: 從前從前，有一隻小熊...",
+]
+
+# 使用方式和一般呼叫相同
+body = json.dumps({
+    "contents": [{"parts": [{"text": "Say this warmly and lovingly: 親愛的，今天辛苦了，早點休息吧"}]}],
+    "generationConfig": {
+        "responseModalities": ["AUDIO"],
+        "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": "Leda"}}}
+    }
+}, ensure_ascii=False).encode('utf-8')</pre>
+      </div>
+    </div>
+
+    <div id="code-multi" class="tab-content">
+      <div class="card">
+        <pre># 多說話者對話合成
+body = json.dumps({
+    "contents": [{"parts": [{"text": "TTS the following conversation between Joe and Jane:\nJoe: How are you today?\nJane: I'm doing great, thank you!"}]}],
+    "generationConfig": {
+        "responseModalities": ["AUDIO"],
+        "speechConfig": {
+            "multiSpeakerVoiceConfig": {
+                "speakerVoiceConfigs": [
+                    {
+                        "speaker": "Joe",
+                        "voiceConfig": {"prebuiltVoiceConfig": {"voiceName": "Achird"}}
+                    },
+                    {
+                        "speaker": "Jane",
+                        "voiceConfig": {"prebuiltVoiceConfig": {"voiceName": "Leda"}}
+                    }
+                ]
+            }
+        }
+    }
+}, ensure_ascii=False).encode('utf-8')</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    <a href="index.html">← Google Cloud TTS 教學</a> &nbsp;|&nbsp;
+    基於 <a href="https://ai.google.dev/gemini-api/docs/speech-generation" target="_blank">Gemini API</a> 製作
+  </p>
+</footer>
+
+<script>
+  function filterVoice(gender) {
+    document.querySelectorAll('.filter-btn').forEach((b, i) => {
+      b.classList.toggle('active', ['female','male','all'][i] === gender);
+    });
+    document.querySelectorAll('.voice-card').forEach(c => {
+      const g = c.dataset.gender;
+      c.style.display = (gender === 'all' || gender === g) ? 'block' : 'none';
+    });
+  }
+  function switchCodeTab(name) {
+    document.querySelectorAll('#code .tab').forEach((t, i) => {
+      t.classList.toggle('active', ['python','style','multi'][i] === name);
+    });
+    document.querySelectorAll('#code .tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('code-' + name).classList.add('active');
+  }
+  const sections = document.querySelectorAll('section');
+  const navLinks = document.querySelectorAll('.nav a:not(.nav-back)');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  });
+</script>
+</body>
+</html>
