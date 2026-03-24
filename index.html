@@ -288,11 +288,50 @@
     <div class="section-sub">所有範例均使用相同文字合成，方便直接比較音質差異</div>
 
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('chirp')">🌟 Chirp3 HD（簡體中文）</div>
+      <div class="tab active" onclick="switchTab('gemini')">🚀 Gemini 2.5 Flash TTS（30種）</div>
+      <div class="tab" onclick="switchTab('chirp')">🌟 Chirp3 HD（簡體中文）</div>
       <div class="tab" onclick="switchTab('wavenet')">✨ WaveNet（繁體中文）</div>
     </div>
 
-    <div id="tab-chirp" class="tab-content active">
+    <div id="tab-gemini" class="tab-content active">
+      <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">示例文字：「Hello dear, this is my voice. Do you like it? I hope to be with you every day.」（Gemini TTS 使用 AI Studio API Key）</p>
+      <div class="voice-grid">
+        <!-- Female voices -->
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Achernar</div><div class="voice-meta">女聲・輕柔溫和 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Achernar.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Aoede</div><div class="voice-meta">女聲・活潑生動 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Aoede.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Autonoe</div><div class="voice-meta">女聲・樂觀積極 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Autonoe.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Callirrhoe</div><div class="voice-meta">女聲・輕鬆隨和 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Callirrhoe.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Despina</div><div class="voice-meta">女聲・流暢柔順 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Despina.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Erinome</div><div class="voice-meta">女聲・清晰精準 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Erinome.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Gacrux</div><div class="voice-meta">女聲・成熟穩重 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Gacrux.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Kore</div><div class="voice-meta">女聲・自信穩重 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Kore.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Laomedeia</div><div class="voice-meta">女聲・活潑有勁 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Laomedeia.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Leda ⭐</div><div class="voice-meta">女聲・年輕有活力 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Leda.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Pulcherrima</div><div class="voice-meta">女聲・表達力強 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Pulcherrima.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Sulafat</div><div class="voice-meta">女聲・溫暖親切 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Sulafat.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Vindemiatrix</div><div class="voice-meta">女聲・輕柔和藹 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Vindemiatrix.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar female">👩</div><div><div class="voice-name">Zephyr</div><div class="voice-meta">女聲・明亮開朗 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Zephyr.wav"></audio></div>
+        <!-- Male voices -->
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Achird</div><div class="voice-meta">男聲・友善親切 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Achird.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Algenib</div><div class="voice-meta">男聲・粗獷質感 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Algenib.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Algieba</div><div class="voice-meta">男聲・流暢愉快 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Algieba.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Alnilam</div><div class="voice-meta">男聲・穩定有力 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Alnilam.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Charon</div><div class="voice-meta">男聲・清晰沉穩 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Charon.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Enceladus</div><div class="voice-meta">男聲・輕柔氣息 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Enceladus.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Fenrir</div><div class="voice-meta">男聲・充滿活力 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Fenrir.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Iapetus</div><div class="voice-meta">男聲・清晰流暢 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Iapetus.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Orus</div><div class="voice-meta">男聲・果斷有力 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Orus.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Puck</div><div class="voice-meta">男聲・活潑有趣 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Puck.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Rasalgethi</div><div class="voice-meta">男聲・專業清晰 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Rasalgethi.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Sadachbia</div><div class="voice-meta">男聲・生動活潑 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Sadachbia.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Sadaltager</div><div class="voice-meta">男聲・權威淵博 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Sadaltager.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Schedar</div><div class="voice-meta">男聲・男中音 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Schedar.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Umbriel</div><div class="voice-meta">男聲・低沉穩重 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Umbriel.wav"></audio></div>
+        <div class="voice-card"><div class="voice-header"><div class="voice-avatar male">👨</div><div><div class="voice-name">Zubenelgenubi</div><div class="voice-meta">男聲・平靜沉穩 &nbsp;<span class="voice-badge badge-chirp">Gemini 2.5</span></div></div></div><audio controls src="audio/gemini/Zubenelgenubi.wav"></audio></div>
+      </div>
+    </div>
+
+    <div id="tab-chirp" class="tab-content">
       <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">示例文字：「亲爱的宝贝，这是我的声音哦～你喜欢哪一种呢？」</p>
       <div class="voice-grid">
         <div class="voice-card">
@@ -564,7 +603,7 @@ req.end();</pre>
 <script>
   function switchTab(name) {
     document.querySelectorAll('#demo .tab').forEach((t, i) => {
-      t.classList.toggle('active', ['chirp','wavenet'][i] === name);
+      t.classList.toggle('active', ['gemini','chirp','wavenet'][i] === name);
     });
     document.querySelectorAll('#demo .tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
